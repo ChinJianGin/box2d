@@ -159,6 +159,11 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)\Resources\" /D /E /I /F /Y
     <ClCompile Include="..\Classes\Common\GLES-Render.cpp" />
     <ClCompile Include="..\Classes\FixtureCollisionScene.cpp" />
     <ClCompile Include="..\Classes\JointScene.cpp" />
+    <ClCompile Include="..\Classes\stagefour.cpp" />
+    <ClCompile Include="..\Classes\stageone.cpp" />
+    <ClCompile Include="..\Classes\stagethree.cpp" />
+    <ClCompile Include="..\Classes\stagetwo.cpp" />
+    <ClCompile Include="..\Classes\startscene.cpp" />
     <ClCompile Include="..\Classes\StaticDynamicScene.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
@@ -171,6 +176,11 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)\Resources\" /D /E /I /F /Y
     <ClInclude Include="..\Classes\Common\GLES-Render.h" />
     <ClInclude Include="..\Classes\FixtureCollisionScene.h" />
     <ClInclude Include="..\Classes\JointScene.h" />
+    <ClInclude Include="..\Classes\stagefour.h" />
+    <ClInclude Include="..\Classes\stageone.h" />
+    <ClInclude Include="..\Classes\stagethree.h" />
+    <ClInclude Include="..\Classes\stagetwo.h" />
+    <ClInclude Include="..\Classes\startscene.h" />
     <ClInclude Include="..\Classes\StaticDynamicScene.h" />
     <ClInclude Include="main.h" />
   </ItemGroup>

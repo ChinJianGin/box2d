@@ -30,7 +30,7 @@
 #define USE_AUDIO_ENGINE 1
 // #define USE_SIMPLE_AUDIO_ENGINE 1  // audio engine 兩個只能二選一
 
-#define BOX2D_EXAMPLE 1
+#define BOX2D_EXAMPLE 4
 
 #if BOX2D_EXAMPLE == 1
 #include "StaticDynamicScene.h"
@@ -38,6 +38,8 @@
 #include "FixtureCollisionScene.h"
 #elif  BOX2D_EXAMPLE == 3
 #include "JointScene.h"
+#elif  BOX2D_EXAMPLE == 4
+#include "startscene.h"
 #endif
 
 #if USE_AUDIO_ENGINE
@@ -139,6 +141,8 @@ bool AppDelegate::applicationDidFinishLaunching() {
     auto scene = FixtureCollision::createScene();
 #elif  BOX2D_EXAMPLE == 3
     auto scene = JointScene::createScene();
+#elif  BOX2D_EXAMPLE == 4
+    auto scene = StartScene::createScene();
 #endif
 
     director->runWithScene(scene); // 設定 director 從這個 scene 開始執行
