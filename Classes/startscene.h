@@ -9,6 +9,7 @@
 #include "stagethree.h"
 #include "stagefour.h"
 
+
 #define STAGE_NUM 4
 
 class StartScene : public cocos2d::Scene

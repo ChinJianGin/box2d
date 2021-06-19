@@ -157,6 +157,7 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)\Resources\" /D /E /I /F /Y
     <ClCompile Include="..\Classes\Common\CLight.cpp" />
     <ClCompile Include="..\Classes\Common\GB2ShapeCache-x.cpp" />
     <ClCompile Include="..\Classes\Common\GLES-Render.cpp" />
+    <ClCompile Include="..\Classes\Common\StaticShapeCreator.cpp" />
     <ClCompile Include="..\Classes\FixtureCollisionScene.cpp" />
     <ClCompile Include="..\Classes\JointScene.cpp" />
     <ClCompile Include="..\Classes\stagefour.cpp" />
@@ -174,6 +175,7 @@ xcopy "$(ProjectDir)..\Resources" "$(OutDir)\Resources\" /D /E /I /F /Y
     <ClInclude Include="..\Classes\Common\CLight.h" />
     <ClInclude Include="..\Classes\Common\GB2ShapeCache-x.h" />
     <ClInclude Include="..\Classes\Common\GLES-Render.h" />
+    <ClInclude Include="..\Classes\Common\StaticShapeCreator.h" />
     <ClInclude Include="..\Classes\FixtureCollisionScene.h" />
     <ClInclude Include="..\Classes\JointScene.h" />
     <ClInclude Include="..\Classes\stagefour.h" />

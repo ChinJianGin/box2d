@@ -60,6 +60,9 @@
     <ClCompile Include="..\Classes\stagefour.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\Common\StaticShapeCreator.cpp">
+      <Filter>src\common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -106,6 +109,9 @@
     </ClInclude>
     <ClInclude Include="..\Classes\stagefour.h">
       <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Common\StaticShapeCreator.h">
+      <Filter>src\common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -1,5 +1,5 @@
 #pragma once
-//#define BOX2D_DEBUG 1
+#define BOX2D_DEBUG 1
 
 #include "cocos2d.h"
 #include "cocostudio/CocoStudio.h"
@@ -7,6 +7,7 @@
 #include "Common/CButton.h"
 #include "Common/CLight.h"
 #include "startscene.h"
+#include "Common/StaticShapeCreator.h"
 
 #ifdef BOX2D_DEBUG
 #include "Common/GLES-Render.h"
@@ -18,24 +19,38 @@
 #define AccelerateMaxNum 2
 #define AccelerateRatio 1.5f
 
-//class CContactListener : public b2ContactListener
-//{
-//public:
-//	cocos2d::Sprite* _targetSprite; // 用於判斷是否
-//	bool _bCreateSpark;		//產生火花
-//	bool _bApplyImpulse;	// 產生瞬間的衝力
-//	b2Vec2 _createLoc;
-//	int  _NumOfSparks;
-//	CContactListener();
-//	//碰撞開始
-//	virtual void BeginContact(b2Contact* contact);
-//	//碰撞結束
-//	virtual void EndContact(b2Contact* contact);
-//	void setCollisionTarget(cocos2d::Sprite& targetSprite);
-//};
+class ContactListener : public b2ContactListener
+{
+public:
+	//cocos2d::Sprite* _targetSprite; // 用於判斷是否
+	//bool _bCreateSpark;		//產生火花
+	//bool _bApplyImpulse;	// 產生瞬間的衝力
+	//b2Vec2 _createLoc;
+	//int  _NumOfSparks;
+	ContactListener();
+	bool _goal;
+	//碰撞開始
+	virtual void BeginContact(b2Contact* contact);
+	//碰撞結束
+	virtual void EndContact(b2Contact* contact);
+	//void setCollisionTarget(cocos2d::Sprite& targetSprite);
+	bool isGoal();
+	void setGoal(bool goal);
+};
 
 class StageOne : public cocos2d::Scene
 {
+private:
+	StaticShapeCreator* _shapeCreator;
+	CButton* _gravityBtn[4];
+	Node* _endNode;
+	b2Body* _player;
+	CButton* _resetBtn;
+	Point _spawnPoint;
+	Color3B filterColor[3] = { Color3B(255,150,0), Color3B(0,215,110), Color3B(14,201,220) };
+	Color3B _deafaultColor;
+
+	int _colorChoose;
 public:
 	~StageOne();
 	// there's no 'id' in cpp, so we recommend returning the class instance pointer
@@ -45,21 +60,23 @@ public:
 	// for Box2D
 	b2World* _b2World;
 	cocos2d::Label* _titleLabel;
-	cocos2d::Size _visibleSize;
+	cocos2d::Size _visibleSize;	
 
 	// For FrictionAndFilter Example
 	//CButton* _rectButton;
 	//int _iNumofRect;
 
 	//Return to startscene
-	CButton* _returnButton;
+	CButton* _returnButton[2];
 	bool _bToStartScene;
+
+	Label* _labelBMF;
 
 	// For Sensor And Collision Example
 	//CLight* _light1;
 	//bool _bReleasingBall;
 	//CButton* _ballBtn;
-	//CContactListener _contactListener;
+	ContactListener _contactListener;
 	//cocos2d::Sprite* _collisionSprite;
 	//cocos2d::BlendFunc blendFunc;
 	//float _tdelayTime; // 用於火花的產生，不要事件進入太多而導致一下產生過多的火花
@@ -70,7 +87,7 @@ public:
 	//void setupDesnity();
 	//void setupFrictionAndFilter();
 	//void setupSensorAndCollision();
-	//void createStaticBoundary();
+	void createStaticBoundary();
 
 
 #ifdef BOX2D_DEBUG
@@ -83,6 +100,12 @@ public:
 	virtual bool init();
 	void doStep(float dt);
 
+	void setGravityButton();
+	void createPlayer();
+	void createSensor(int type, int amount);
+	void createFilter();
+	void reset();
+
 
 	bool onTouchBegan(cocos2d::Touch* pTouch, cocos2d::Event* pEvent); //觸碰開始事件
 	void onTouchMoved(cocos2d::Touch* pTouch, cocos2d::Event* pEvent); //觸碰移動事件
@@ -90,4 +113,5 @@ public:
 
 	// implement the "static create()" method manually
 	CREATE_FUNC(StageOne);
+
 };

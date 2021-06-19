@@ -44,7 +44,7 @@ bool StageThree::init()
 	_b2World->SetAllowSleeping(AllowSleep);	//設定物件允許睡著
 
 	// Create Scene with csb file
-	_csbRoot = CSLoader::createNode("stageone.csb");
+	_csbRoot = CSLoader::createNode("stagethree.csb");
 #ifndef BOX2D_DEBUG
 	// 設定顯示背景圖示
 	auto bgSprite = _csbRoot->getChildByName("bg64_1");
@@ -126,3 +126,16 @@ void StageThree::onTouchEnded(cocos2d::Touch* pTouch, cocos2d::Event* pEvent)
 		_bToStartScene = true;
 	}
 }
+
+#ifdef BOX2D_DEBUG
+//改寫繪製方法
+void StageThree::draw(Renderer* renderer, const Mat4& transform, uint32_t flags)
+{
+	Director* director = Director::getInstance();
+
+	GL::enableVertexAttribs(cocos2d::GL::VERTEX_ATTRIB_FLAG_POSITION);
+	director->pushMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+	_b2World->DrawDebugData();
+	director->popMatrix(MATRIX_STACK_TYPE::MATRIX_STACK_MODELVIEW);
+}
+#endif
