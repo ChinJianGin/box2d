@@ -8,6 +8,7 @@
 #include "Common/CLight.h"
 #include "startscene.h"
 #include "Common/StaticShapeCreator.h"
+#include "Common/ContactListener.h"
 
 #ifdef BOX2D_DEBUG
 #include "Common/GLES-Render.h"
@@ -18,25 +19,6 @@
 #define RepeatCreateBallTime 3
 #define AccelerateMaxNum 2
 #define AccelerateRatio 1.5f
-
-class ContactListener : public b2ContactListener
-{
-public:
-	//cocos2d::Sprite* _targetSprite; // 用於判斷是否
-	//bool _bCreateSpark;		//產生火花
-	//bool _bApplyImpulse;	// 產生瞬間的衝力
-	//b2Vec2 _createLoc;
-	//int  _NumOfSparks;
-	ContactListener();
-	bool _goal;
-	//碰撞開始
-	virtual void BeginContact(b2Contact* contact);
-	//碰撞結束
-	virtual void EndContact(b2Contact* contact);
-	//void setCollisionTarget(cocos2d::Sprite& targetSprite);
-	bool isGoal();
-	void setGoal(bool goal);
-};
 
 class StageOne : public cocos2d::Scene
 {

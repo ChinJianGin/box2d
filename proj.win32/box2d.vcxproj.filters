@@ -63,6 +63,9 @@
     <ClCompile Include="..\Classes\Common\StaticShapeCreator.cpp">
       <Filter>src\common</Filter>
     </ClCompile>
+    <ClCompile Include="..\Classes\Common\ContactListener.cpp">
+      <Filter>src\common</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="main.h">
@@ -111,6 +114,9 @@
       <Filter>src</Filter>
     </ClInclude>
     <ClInclude Include="..\Classes\Common\StaticShapeCreator.h">
+      <Filter>src\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Classes\Common\ContactListener.h">
       <Filter>src\common</Filter>
     </ClInclude>
   </ItemGroup>

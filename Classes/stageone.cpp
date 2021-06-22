@@ -14,23 +14,6 @@ char g_CircleObject_1[MAX_CIRCLE_OBJECTS_1][20] = {
 USING_NS_CC;
 using namespace cocostudio::timeline;
 
-
-ContactListener::ContactListener()
-{
-	_goal = false;
-}
-
-bool ContactListener::isGoal()
-{
-	return _goal;
-}
-
-void ContactListener::setGoal(bool goal)
-{
-	_goal = goal;
-}
-
-
 StageOne::~StageOne()
 {
 #ifdef BOX2D_DEBUG
@@ -179,13 +162,8 @@ void StageOne::doStep(float dt)
 	Sprite* ballData = static_cast<Sprite*>(_player->GetUserData());
 	if (_contactListener.isGoal())
 	{		
-		//ballData->setColor(Color3B(208, 45, 45));
 		_returnButton[1]->setVisible(true);
 		_resetBtn->setVisible(true);
-	}
-	else
-	{
-		//ballData->setColor(Color3B(77, 204, 42));
 	}
 }
 
@@ -445,66 +423,6 @@ void StageOne::createFilter()
 		fixtureDef.filter.categoryBits = 1 << i;
 		rectbody->CreateFixture(&fixtureDef);
 	}
-}
-
-void ContactListener::BeginContact(b2Contact* contact)
-{
-	b2Body* BodyA = contact->GetFixtureA()->GetBody();
-	b2Body* BodyB = contact->GetFixtureB()->GetBody();
-	Sprite* ballDataA = static_cast<Sprite*>(BodyA->GetUserData());
-	Sprite* ballDataB = static_cast<Sprite*>(BodyB->GetUserData());
-	b2Fixture* fixtureA= BodyA->GetFixtureList();
-	b2Fixture* fixtureB = BodyB->GetFixtureList();
-	b2Filter filter;
-	// check 是否為落下的球經過 sensor1 ，只要經過就立刻讓他彈出去
-	if (BodyA->GetFixtureList()->GetDensity() == 10000.0f) { // 代表 sensor1
-		log("goal");
-		_goal = true;
-	}
-	else if (BodyB->GetFixtureList()->GetDensity() == 10000.0f) {// 代表 sensor1
-		log("goal");
-		_goal = true;
-	}
-	if (BodyA->GetFixtureList()->GetDensity() == 10001.0f) { // 代表 sensor2
-		log("change to red");
-		filter.maskBits = 1 << 2 | 1;
-		ballDataB->setColor(Color3B(255, 150, 0));
-		fixtureB->SetFilterData(filter);
-	}
-	else if (BodyB->GetFixtureList()->GetDensity() == 10001.0f) {	// 代表 sensor2
-		log("change to red");
-		filter.maskBits = 1 << 2 | 1;
-		ballDataA->setColor(Color3B(255, 150, 0));
-		fixtureA->SetFilterData(filter);		
-	}
-	if (BodyA->GetFixtureList()->GetDensity() == 10002.0f) { // 代表 sensor2
-		log("change to green");
-		filter.maskBits = 1 << 1 | 1;
-		ballDataB->setColor(Color3B(0, 215, 110));
-		fixtureB->SetFilterData(filter);
-	}
-	else if (BodyB->GetFixtureList()->GetDensity() == 10002.0f) {	// 代表 sensor2
-		log("change to green");
-		filter.maskBits = 1 << 1 | 1;
-		ballDataA->setColor(Color3B(0, 215, 110));
-		fixtureA->SetFilterData(filter);
-	}
-}
-
-void ContactListener::EndContact(b2Contact* contact)
-{
-	b2Body* BodyA = contact->GetFixtureA()->GetBody();
-	b2Body* BodyB = contact->GetFixtureB()->GetBody();
-
-	if (BodyA->GetFixtureList()->GetDensity() == 10000.0f) { // 代表 sensor2
-		log("leave goal");
-		_goal = false;
-	}
-	else if (BodyB->GetFixtureList()->GetDensity() == 10000.0f) {	// 代表 sensor2
-		log("leave goal");
-		_goal = false;
-	}
-
 }
 
 void StageOne::reset()
