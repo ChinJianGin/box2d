@@ -1,5 +1,5 @@
 #pragma once
-//#define BOX2D_DEBUG 1
+#define BOX2D_DEBUG 1
 
 #include "cocos2d.h"
 #include "cocostudio/CocoStudio.h"
@@ -7,6 +7,7 @@
 #include "Common/CButton.h"
 #include "Common/CLight.h"
 #include "startscene.h"
+#include "iostream"
 
 #ifdef BOX2D_DEBUG
 #include "Common/GLES-Render.h"
@@ -18,24 +19,22 @@
 #define AccelerateMaxNum 2
 #define AccelerateRatio 1.5f
 
-//class CContactListener : public b2ContactListener
-//{
-//public:
-//	cocos2d::Sprite* _targetSprite; // 用於判斷是否
-//	bool _bCreateSpark;		//產生火花
-//	bool _bApplyImpulse;	// 產生瞬間的衝力
-//	b2Vec2 _createLoc;
-//	int  _NumOfSparks;
-//	CContactListener();
-//	//碰撞開始
-//	virtual void BeginContact(b2Contact* contact);
-//	//碰撞結束
-//	virtual void EndContact(b2Contact* contact);
-//	void setCollisionTarget(cocos2d::Sprite& targetSprite);
-//};
+using namespace std;
 
 class StageThree : public cocos2d::Scene
 {
+private:
+	cocos2d::RenderTexture* target;
+	cocos2d::Sprite* brush;
+
+	vector<cocos2d::Point> plataformPoints;
+	cocos2d::Point previousLocation;
+
+	b2Body* currentPlatformBody;
+
+	cocos2d::Layer* boxLayer;
+
+	int test;
 public:
 	~StageThree();
 	// there's no 'id' in cpp, so we recommend returning the class instance pointer
@@ -70,7 +69,11 @@ public:
 	//void setupDesnity();
 	//void setupFrictionAndFilter();
 	//void setupSensorAndCollision();
-	//void createStaticBoundary();
+	void createStaticBoundary();
+
+	void addRectangle(b2Body* body, Point start, Point end);
+
+	cocos2d::Rect getBodyRectangle(b2Body* body);
 
 
 #ifdef BOX2D_DEBUG
