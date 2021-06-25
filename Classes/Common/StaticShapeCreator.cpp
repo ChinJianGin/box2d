@@ -63,11 +63,11 @@ void StaticShapeCreator::createShape(int type, int amount)
 		break;
 	case RECT:		
 		fixtureDef.shape = &rectShape;
-		for (size_t i = 1; i < amount; i++)
+		for (size_t i = 1; i <= amount; i++)
 		{
 			std::ostringstream ostr;
 			std::string objname;
-			ostr << "ployblock1_0" << i; objname = ostr.str();
+			ostr << "polyblock1_0" << i; objname = ostr.str();
 
 			auto const rectSprite = dynamic_cast<Sprite*>(_csbRoot->getChildByName(objname));
 			Size ts = rectSprite->getContentSize();

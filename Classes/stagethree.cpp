@@ -16,6 +16,7 @@ StageThree::~StageThree()
 	SpriteFrameCache::getInstance()->removeSpriteFramesFromFile("box2d.plist");
 	SpriteFrameCache::getInstance()->removeSpriteFramesFromFile("scene101bg.plist");
 	Director::getInstance()->getTextureCache()->removeUnusedTextures();
+	Director::getInstance()->getTextureCache()->removeAllTextures();
 }
 
 Scene* StageThree::createScene()
@@ -74,6 +75,8 @@ bool StageThree::init()
 	brush->retain();
 
 	createStaticBoundary();
+	createRock();
+	createCar();
 	test = 0;
 
 #ifdef BOX2D_DEBUG
@@ -94,6 +97,10 @@ bool StageThree::init()
 #endif
 
 	//_b2World->SetContactListener(&_contactListener);
+
+	_shapeCreator = new StaticShapeCreator;
+	_shapeCreator->init(*_b2World, _visibleSize, *this, *_csbRoot);
+	_shapeCreator->createShape(2, 4);
 
 	auto listener = EventListenerTouchOneByOne::create();	//創建一個一對一的事件聆聽器
 	listener->onTouchBegan = CC_CALLBACK_2(StageThree::onTouchBegan, this);		//加入觸碰開始事件
@@ -396,4 +403,119 @@ Rect StageThree::getBodyRectangle(b2Body* body)
 	}
 
 	return CCRectMake(x, y, width, height);
+}
+
+void StageThree::createRock()
+{
+	std::ostringstream ostr;
+	std::string objname;
+
+	for (int i = 1; i <= 5; i++)
+	{
+		ostr.str("");
+		ostr << "rock_0" << i; objname = ostr.str();
+		// 先建立 ballSprite 的 Sprite 並加入場景中
+		auto ballSprite = dynamic_cast<Sprite*>(_csbRoot->getChildByName(objname));
+		ballSprite->setScale(0.75f);
+		Point loc = ballSprite->getPosition();
+		_spawnPoint[i] = ballSprite->getPosition();
+		float ballScale = ballSprite->getScale();
+
+		// 建立一個簡單的動態球體
+		b2BodyDef bodyDef;	// 先以結構 b2BodyDef 宣告一個 Body 的變數
+		bodyDef.type = b2_dynamicBody; // 設定為動態物體
+		bodyDef.userData = ballSprite;	// 設定 Sprite 為動態物體的顯示圖示
+		bodyDef.position.Set(loc.x / PTM_RATIO, loc.y / PTM_RATIO);
+		// 以 bodyDef 在 b2World  中建立實體並傳回該實體的指標
+		b2Body* ballBody = _b2World->CreateBody(&bodyDef);
+		// 設定該物體的外型
+		b2CircleShape ballShape;	//  宣告物體的外型物件變數，此處是圓形物體
+		Size ballsize = ballSprite->getContentSize();	// 根據 Sprite 圖形的大小來設定圓形的半徑
+		ballShape.m_radius = (ballsize.width * ballScale) * 0.5f / PTM_RATIO;
+		// 以 b2FixtureDef  結構宣告剛體結構變數，並設定剛體的相關物理係數
+		b2FixtureDef fixtureDef;	 // 固定裝置
+		fixtureDef.shape = &ballShape;			// 指定剛體的外型為圓形
+		fixtureDef.restitution = 0.8f;			// 設定恢復係數
+		fixtureDef.density = 18.0f;				// 設定密度
+		fixtureDef.friction = 0.1f;			// 設定摩擦係數
+		//fixtureDef.filter.maskBits = 0 << 1 | 1;
+		ballBody->CreateFixture(&fixtureDef);	// 在 Body 上產生這個剛體的設定
+		_Rock[i - 1] = ballBody;
+	}
+}
+
+void StageThree::createBasketandPulley()
+{
+	std::ostringstream ostr;
+	std::string objname;
+}
+
+void StageThree::createCar()
+{
+	b2Body* wheel[2];
+
+	std::ostringstream ostr;
+	std::string objname;
+	//Car body
+	auto carSprite = dynamic_cast<Sprite*>(_csbRoot->getChildByName("car"));
+	Point loc = carSprite->getPosition();
+	Size size = carSprite->getContentSize();
+	float scaleX = carSprite->getScaleX();
+	float scaleY = carSprite->getScaleY();
+
+	b2BodyDef bodydef;
+	bodydef.type = b2_dynamicBody;
+	bodydef.userData = carSprite;
+	bodydef.position.Set(loc.x / PTM_RATIO, loc.y / PTM_RATIO);
+
+	b2Body* carBody = _b2World->CreateBody(&bodydef);
+
+	b2PolygonShape carShape;
+	b2FixtureDef fixtureDef;
+
+	carShape.SetAsBox((size.width - 8) * 0.5f * scaleX / PTM_RATIO, (size.height - 8) * 0.25f * scaleY / PTM_RATIO);
+	fixtureDef.shape = &carShape;
+	fixtureDef.density = 5.0f;
+	fixtureDef.friction = 0.1f;
+	fixtureDef.restitution = 0.1f;
+
+	carBody->CreateFixture(&fixtureDef);
+	//
+
+	for (int i = 1; i <= 2; i++)
+	{
+		ostr.str("");
+		ostr << "wheel_0" << i; objname = ostr.str();
+
+		auto wheelSprite = dynamic_cast<Sprite*>(_csbRoot->getChildByName(objname));
+		Point wheelLoc = wheelSprite->getPosition();
+		Size wheelSize = wheelSprite->getContentSize();
+		b2CircleShape wheelShape;
+		wheelShape.m_radius = wheelSize.width * 0.5f / PTM_RATIO;
+		bodydef.position.Set(wheelLoc.x / PTM_RATIO, wheelLoc.y / PTM_RATIO);
+		bodydef.userData = wheelSprite;
+
+		b2Body* wheelBody = _b2World->CreateBody(&bodydef);
+		fixtureDef.shape = &wheelShape;
+		fixtureDef.density = 1.0f;
+		fixtureDef.friction = 0.2f;
+		fixtureDef.restitution = 0.4f;
+
+		wheelBody->CreateFixture(&fixtureDef);
+		wheel[i - 1] = wheelBody;
+	}
+
+	b2RevoluteJointDef wheelJoint;
+	wheelJoint.bodyA = carBody;
+	wheelJoint.localAnchorA.Set(-1.2f, -0.7f);
+	wheelJoint.bodyB = wheel[0];
+	wheelJoint.localAnchorB.Set(0, 0);
+
+	_b2World->CreateJoint(&wheelJoint);
+
+	wheelJoint.localAnchorA.Set(1.0f, -0.7f);
+	wheelJoint.bodyB = wheel[1];
+	wheelJoint.localAnchorB.Set(0, 0);
+
+	_b2World->CreateJoint(&wheelJoint);
 }

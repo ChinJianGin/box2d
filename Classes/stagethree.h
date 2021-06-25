@@ -7,7 +7,8 @@
 #include "Common/CButton.h"
 #include "Common/CLight.h"
 #include "startscene.h"
-#include "iostream"
+#include "Common/StaticShapeCreator.h"
+#include "Common/ContactListener.h"
 
 #ifdef BOX2D_DEBUG
 #include "Common/GLES-Render.h"
@@ -24,6 +25,7 @@ using namespace std;
 class StageThree : public cocos2d::Scene
 {
 private:
+	StaticShapeCreator* _shapeCreator;
 	cocos2d::RenderTexture* target;
 	cocos2d::Sprite* brush;
 
@@ -35,6 +37,8 @@ private:
 	cocos2d::Layer* boxLayer;
 
 	int test;
+	Point _spawnPoint[6];
+	b2Body* _Rock[5];
 public:
 	~StageThree();
 	// there's no 'id' in cpp, so we recommend returning the class instance pointer
@@ -85,6 +89,10 @@ public:
 	// Here's a difference. Method 'init' in cocos2d-x returns bool, instead of returning 'id' in cocos2d-iphone
 	virtual bool init();
 	void doStep(float dt);
+
+	void createRock();
+	void createBasketandPulley();
+	void createCar();
 
 
 	bool onTouchBegan(cocos2d::Touch* pTouch, cocos2d::Event* pEvent); //觸碰開始事件
