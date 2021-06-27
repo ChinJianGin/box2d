@@ -1,5 +1,5 @@
 #pragma once
-#define BOX2D_DEBUG 1
+//#define BOX2D_DEBUG 1
 
 #include "cocos2d.h"
 #include "cocostudio/CocoStudio.h"

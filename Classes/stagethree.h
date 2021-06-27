@@ -1,5 +1,5 @@
 #pragma once
-#define BOX2D_DEBUG 1
+//#define BOX2D_DEBUG 1
 
 #include "cocos2d.h"
 #include "cocostudio/CocoStudio.h"
@@ -30,6 +30,7 @@ private:
 	cocos2d::Sprite* brush;
 
 	vector<cocos2d::Point> plataformPoints;
+	vector<b2Body*> freehandBody;
 	cocos2d::Point previousLocation;
 
 	b2Body* currentPlatformBody;
@@ -39,6 +40,19 @@ private:
 	int test;
 	Point _spawnPoint[6];
 	b2Body* _Rock[5];
+
+	Node* _endNode;
+
+	CButton* _resetButton[2];
+
+	b2Body* _player;
+
+	b2Body* _door;
+	Point _doorSpawn;
+
+	b2Body* _rearWheel;
+
+	bool _breset;
 public:
 	~StageThree();
 	// there's no 'id' in cpp, so we recommend returning the class instance pointer
@@ -55,14 +69,14 @@ public:
 	//int _iNumofRect;
 
 	//Return to startscene
-	CButton* _returnButton;
+	CButton* _returnButton[2];
 	bool _bToStartScene;
 
 	// For Sensor And Collision Example
 	//CLight* _light1;
 	//bool _bReleasingBall;
 	//CButton* _ballBtn;
-	//CContactListener _contactListener;
+	ContactListener _contactListener;
 	//cocos2d::Sprite* _collisionSprite;
 	//cocos2d::BlendFunc blendFunc;
 	//float _tdelayTime; // 用於火花的產生，不要事件進入太多而導致一下產生過多的火花
@@ -93,6 +107,10 @@ public:
 	void createRock();
 	void createBasketandPulley();
 	void createCar();
+	void reset();
+	void resetObj();
+	void createSensor(int type, int amount);
+	void createWall();
 
 
 	bool onTouchBegan(cocos2d::Touch* pTouch, cocos2d::Event* pEvent); //觸碰開始事件

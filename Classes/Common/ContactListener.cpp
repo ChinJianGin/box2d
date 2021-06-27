@@ -24,6 +24,11 @@ void ContactListener::setGoal(bool goal)
 	_goal = goal;
 }
 
+b2Body* ContactListener::getContactObj()
+{
+	return _contactObj;
+}
+
 void ContactListener::BeginContact(b2Contact* contact)
 {
 	b2Body* BodyA = contact->GetFixtureA()->GetBody();
@@ -114,6 +119,11 @@ void ContactListener::BeginContact(b2Contact* contact)
 			_bCreateSpark = true;
 			_createLoc = BodyA->GetWorldCenter();
 		}
+		else if (BodyB->GetFixtureList()->GetDensity() == 18.0f)
+		{
+			_portal = true;
+			_contactObj = BodyB;
+		}
 	}
 	else if (BodyB->GetFixtureList()->GetDensity() == 10010.0f)
 	{
@@ -123,6 +133,11 @@ void ContactListener::BeginContact(b2Contact* contact)
 			_portal = true;
 			_bCreateSpark = true;
 			_createLoc = BodyB->GetWorldCenter();
+		}
+		else if (BodyA->GetFixtureList()->GetDensity() == 18.0f)
+		{
+			_portal = true;
+			_contactObj = BodyA;
 		}
 	}
 }
@@ -142,9 +157,11 @@ void ContactListener::EndContact(b2Contact* contact)
 	}
 	if (BodyA->GetFixtureList()->GetDensity() == 10010.0f) { // 代表 sensor2
 		_portal = false;
+		_contactObj = nullptr;
 	}
 	else if (BodyB->GetFixtureList()->GetDensity() == 10010.0f) {	// 代表 sensor2
 		log("leave goal");
 		_portal = false;
+		_contactObj = nullptr;
 	}
 }

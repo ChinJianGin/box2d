@@ -1,5 +1,5 @@
 #pragma once
-#define BOX2D_DEBUG 1
+//#define BOX2D_DEBUG 1
 
 #include "cocos2d.h"
 #include "cocostudio/CocoStudio.h"
@@ -48,21 +48,9 @@ public:
 	CButton* _returnButton[2];
 	bool _bToStartScene;
 
-	// For Sensor And Collision Example
-	//CLight* _light1;
-	//bool _bReleasingBall;
-	//CButton* _ballBtn;
 	ContactListener _contactListener;
-	//cocos2d::Sprite* _collisionSprite;
-	//cocos2d::BlendFunc blendFunc;
-	//float _tdelayTime; // 用於火花的產生，不要事件進入太多而導致一下產生過多的火花
 	bool  _bSparking;  // true: 可以噴出火花，false: 不行	
 
-	// Box2D Examples
-	//void setStaticWalls();
-	//void setupDesnity();
-	//void setupFrictionAndFilter();
-	//void setupSensorAndCollision();
 	void createStaticBoundary();
 
 

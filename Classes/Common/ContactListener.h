@@ -7,6 +7,8 @@ USING_NS_CC;
 
 class ContactListener : public b2ContactListener
 {
+private:
+	b2Body* _contactObj;
 public:
 	bool _bCreateSpark;		//²£¥Í¤õªá
 	b2Vec2 _createLoc;
@@ -21,4 +23,6 @@ public:
 	bool isGoal();
 	bool isPortal();
 	void setGoal(bool goal);
+
+	b2Body* getContactObj();
 };
