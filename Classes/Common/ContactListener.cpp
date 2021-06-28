@@ -5,6 +5,7 @@ ContactListener::ContactListener()
 	_goal = false;
 	_portal = false;
 	_bCreateSpark = false;
+	_changeDir = false;
 	_NumOfSparks = 10;
 }
 
@@ -17,6 +18,16 @@ bool ContactListener::isGoal()
 bool ContactListener::isPortal()
 {
 	return _portal;
+}
+
+bool ContactListener::isChangeDir()
+{
+	return _changeDir;
+}
+
+void ContactListener::setChangeDir(bool change)
+{
+	_changeDir = change;
 }
 
 void ContactListener::setGoal(bool goal)
@@ -140,6 +151,24 @@ void ContactListener::BeginContact(b2Contact* contact)
 			_contactObj = BodyA;
 		}
 	}
+	if (BodyA->GetFixtureList()->GetDensity() == 10020.0f)
+	{
+		
+		if (BodyB->GetFixtureList()->GetDensity() == 5.0f)
+		{
+			log("change");
+			_changeDir = true;
+		}
+	}
+	else if (BodyB->GetFixtureList()->GetDensity() == 10020.0f)
+	{
+		
+		if (BodyA->GetFixtureList()->GetDensity() == 5.0f)
+		{
+			log("change");
+			_changeDir = true;
+		}
+	}
 }
 
 void ContactListener::EndContact(b2Contact* contact)
@@ -163,5 +192,13 @@ void ContactListener::EndContact(b2Contact* contact)
 		log("leave goal");
 		_portal = false;
 		_contactObj = nullptr;
+	}
+	if (BodyA->GetFixtureList()->GetDensity() == 10020.0f)
+	{
+			_changeDir = false;
+	}
+	else if (BodyB->GetFixtureList()->GetDensity() == 10020.0f)
+	{
+		_changeDir = false;
 	}
 }

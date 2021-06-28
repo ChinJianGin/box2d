@@ -73,21 +73,31 @@ bool StageFour::init()
 	this->addChild(_returnButton[1], 3);
 	btnSprite->setVisible(false);
 
+	btnSprite = dynamic_cast<Sprite*>(_csbRoot->getChildByName("resetbtn"));
+	_resetBtn[0] = CButton::create();
+	_resetBtn[0]->setButtonInfo("replaybtn.png", "replaybtn.png", btnSprite->getPosition());
+	_resetBtn[0]->setScale(btnSprite->getScale());
+	this->addChild(_resetBtn[0], 3);
+	btnSprite->setVisible(false);
+
 	btnSprite = dynamic_cast<Sprite*>(_endNode->getChildByName("resetbtn"));
-	_resetBtn = CButton::create();
-	_resetBtn->setButtonInfo("replaybtn.png", "replaybtn.png", btnSprite->getPosition());
-	_resetBtn->setScale(btnSprite->getScale());
-	_resetBtn->setVisible(false);
-	this->addChild(_resetBtn, 3);
+	_resetBtn[1] = CButton::create();
+	_resetBtn[1]->setButtonInfo("replaybtn.png", "replaybtn.png", btnSprite->getPosition());
+	_resetBtn[1]->setScale(btnSprite->getScale());
+	_resetBtn[1]->setVisible(false);
+	this->addChild(_resetBtn[1], 3);
 	btnSprite->setVisible(false);
 
 	createStaticBoundary();
 	createSensor(1, 0);
-	createSensor(4, 3);
+	createSensor(4, 2);
 	createCar();
 	createBridgeAndRope();
+	createElevator();
+	createDynamicWalls();
 
 	_bTouchOn = false;
+	wv = -30.0f;
 
 #ifdef BOX2D_DEBUG
 	//DebugDrawInit
@@ -156,8 +166,15 @@ void StageFour::doStep(float dt)
 	if (_contactListener.isGoal())
 	{
 		_returnButton[1]->setVisible(true);
-		_resetBtn->setVisible(true);
+		_resetBtn[1]->setVisible(true);
 	}
+	_rearWheel->SetAngularVelocity(wv);
+	if (_contactListener.isChangeDir())
+	{
+		wv = wv * -1;
+		_contactListener.setChangeDir(false);
+	}
+	log("%1.3f", _rearWheel->GetAngularVelocity());
 }
 
 bool StageFour::onTouchBegan(cocos2d::Touch* pTouch, cocos2d::Event* pEvent)
@@ -167,33 +184,36 @@ bool StageFour::onTouchBegan(cocos2d::Touch* pTouch, cocos2d::Event* pEvent)
 	for (int i = 0; i < 2; i++)
 	{
 		_returnButton[i]->touchesBegin(touchLoc);
+		_resetBtn[i]->touchesBegin(touchLoc);
 	}
-	_resetBtn->touchesBegin(touchLoc);
-
 	// For Mouse Joiint 
 	for (b2Body* body = _b2World->GetBodyList(); body; body = body->GetNext())
 	{
 		if (body->GetUserData() == NULL) continue; // 靜態物體不處理
 		// 判斷點的位置是否落在動態物體一定的範圍
-		Sprite* spriteObj = static_cast<Sprite*>(body->GetUserData());
-		Size objSize = spriteObj->getContentSize();
-		float fdist = MAX_2(objSize.width, objSize.height) / 2.0f;
-		float x = body->GetPosition().x * PTM_RATIO - touchLoc.x;
-		float y = body->GetPosition().y * PTM_RATIO - touchLoc.y;
-		float tpdist = x * x + y * y;
-		if (tpdist < fdist * fdist)
+		if (body == _MouseJointBody[0] || body == _MouseJointBody[1] || body == _MouseJointBody[2])
 		{
-			_bTouchOn = true;
-			b2MouseJointDef mouseJointDef;
-			mouseJointDef.bodyA = _bottomBody;
-			mouseJointDef.bodyB = body;
-			mouseJointDef.target = b2Vec2(touchLoc.x / PTM_RATIO, touchLoc.y / PTM_RATIO);
-			mouseJointDef.collideConnected = true;
-			mouseJointDef.maxForce = 1000.0f * body->GetMass();
-			_MouseJoint = dynamic_cast<b2MouseJoint*>(_b2World->CreateJoint(&mouseJointDef)); // 新增 Mouse Joint
-			body->SetAwake(true);
-			break;
+			Sprite* spriteObj = static_cast<Sprite*>(body->GetUserData());
+			Size objSize = spriteObj->getContentSize();
+			float fdist = MAX_2(objSize.width, objSize.height) / 2.0f;
+			float x = body->GetPosition().x * PTM_RATIO - touchLoc.x;
+			float y = body->GetPosition().y * PTM_RATIO - touchLoc.y;
+			float tpdist = x * x + y * y;
+			if (tpdist < fdist * fdist)
+			{
+				_bTouchOn = true;
+				b2MouseJointDef mouseJointDef;
+				mouseJointDef.bodyA = _bottomBody;
+				mouseJointDef.bodyB = body;
+				mouseJointDef.target = b2Vec2(touchLoc.x / PTM_RATIO, touchLoc.y / PTM_RATIO);
+				mouseJointDef.collideConnected = true;
+				mouseJointDef.maxForce = 1000.0f * body->GetMass();
+				_MouseJoint = dynamic_cast<b2MouseJoint*>(_b2World->CreateJoint(&mouseJointDef)); // 新增 Mouse Joint
+				body->SetAwake(true);
+				break;
+			}
 		}
+		
 	}
 	return true;
 }
@@ -204,8 +224,9 @@ void StageFour::onTouchMoved(cocos2d::Touch* pTouch, cocos2d::Event* pEvent)
 	for (int i = 0; i < 2; i++)
 	{
 		_returnButton[i]->touchesMoved(touchLoc);
+		_resetBtn[i]->touchesMoved(touchLoc);
 	}
-	_resetBtn->touchesMoved(touchLoc);
+	
 	if (_bTouchOn)
 	{
 		_MouseJoint->SetTarget(b2Vec2(touchLoc.x / PTM_RATIO, touchLoc.y / PTM_RATIO));
@@ -221,10 +242,10 @@ void StageFour::onTouchEnded(cocos2d::Touch* pTouch, cocos2d::Event* pEvent)
 		{
 			_bToStartScene = true;
 		}
-	}
-	if (_resetBtn->touchesEnded(touchLoc))
-	{
-		reset();
+		if (_resetBtn[i]->touchesEnded(touchLoc))
+		{
+			reset();
+		}
 	}
 	if (_bTouchOn)
 	{
@@ -388,10 +409,8 @@ void StageFour::createSensor(int type, int amount)
 			b2FixtureDef PortalFixtureDef;
 			PortalFixtureDef.shape = &portalShape;
 			PortalFixtureDef.isSensor = true;
-			PortalFixtureDef.density = 9999 + 20 + i;
+			PortalFixtureDef.density = 10000 + 20;
 			PortalBody->CreateFixture(&PortalFixtureDef);
-
-			//_bSparking = true;
 		}
 		break;
 	}
@@ -440,24 +459,26 @@ void StageFour::createCar()
 
 		auto wheelSprite = dynamic_cast<Sprite*>(_csbRoot->getChildByName(objname));
 		Point wheelLoc = wheelSprite->getPosition();
+		_spawnPoint[10 + i] = wheelSprite->getPosition();
 		Size wheelSize = wheelSprite->getContentSize();
 		b2CircleShape wheelShape;
 		wheelShape.m_radius = wheelSize.width * 0.5f / PTM_RATIO;
 		bodydef.position.Set(wheelLoc.x / PTM_RATIO, wheelLoc.y / PTM_RATIO);
 		bodydef.userData = wheelSprite;
-
+		
 		b2Body* wheelBody = _b2World->CreateBody(&bodydef);
 		fixtureDef.shape = &wheelShape;
 		fixtureDef.density = 1.0f;
 		fixtureDef.friction = 0.2f;
 		fixtureDef.restitution = 0.4f;
-
+		
 		wheelBody->CreateFixture(&fixtureDef);
 		wheel[i - 1] = wheelBody;
 
 		if (i == 1)_rearWheel = wheelBody;
+		else _frontWheel = wheelBody;
 	}
-	//_rearWheel->SetAngularVelocity(-100.0f);
+	
 
 	b2RevoluteJointDef wheelJoint;
 	wheelJoint.bodyA = carBody;
@@ -510,6 +531,8 @@ void StageFour::createBridgeAndRope()
 		staticBody[i] = _b2World->CreateBody(&staticBodyDef);
 		staticBody[i]->CreateFixture(&fixtureDef);
 	}
+	_spawnPoint[8] = loc[0];
+	_spawnPoint[9] = loc[3];
 	b2BodyDef dynamicBodyDef;
 	dynamicBodyDef.type = b2_dynamicBody;
 
@@ -537,6 +560,9 @@ void StageFour::createBridgeAndRope()
 		dynamicBody[i] = _b2World->CreateBody(&dynamicBodyDef);
 		dynamicBody[i]->CreateFixture(&fixtureDef);
 	}
+
+	_MouseJointBody[0] = dynamicBody[0];
+	_MouseJointBody[1] = dynamicBody[3];
 
 	b2RevoluteJointDef RJoint;
 	b2PrismaticJointDef PrJoint;
@@ -574,21 +600,24 @@ void StageFour::createBridgeAndRope()
 	GJoint.ratio = 1;
 	_b2World->CreateJoint(&GJoint);
 
+	//bridge
 	auto bridgeSprite = dynamic_cast<Sprite*>(_csbRoot->getChildByName("bridge"));
 	Point bridgeLoc = bridgeSprite->getPosition();
+	_spawnPoint[10] = bridgeSprite->getPosition();
 	Size bridgeSize = bridgeSprite->getContentSize();
 	float scaleX = bridgeSprite->getScaleX();
 	float scaleY = bridgeSprite->getScaleY();
 
 	dynamicBodyDef.position.Set(bridgeLoc.x / PTM_RATIO, bridgeLoc.y / PTM_RATIO);
 	dynamicBodyDef.userData = bridgeSprite;
+	dynamicBodyDef.fixedRotation = true;
 	b2Body* bridgeBody = _b2World->CreateBody(&dynamicBodyDef);
 
 	b2PolygonShape bridgeShape;
-	bridgeShape.SetAsBox((bridgeSize.width - 4) * scaleX * 0.5f / PTM_RATIO, (bridgeSize.height - 4) * scaleY * 0.5f / PTM_RATIO);
+	bridgeShape.SetAsBox((bridgeSize.width - 5) * scaleX * 0.5f / PTM_RATIO, (bridgeSize.height - 5) * scaleY * 0.5f / PTM_RATIO);
 
 	fixtureDef.shape = &bridgeShape;
-	fixtureDef.density = 7.0f;
+	fixtureDef.density = 3.0f;
 	fixtureDef.friction = 0.1f;
 	fixtureDef.restitution = 0;
 	fixtureDef.filter.maskBits = 1 << 2 | 1;
@@ -596,11 +625,224 @@ void StageFour::createBridgeAndRope()
 
 	bridgeBody->CreateFixture(&fixtureDef);
 
+	_MouseJointBody[2] = bridgeBody;
 
+	//rope joint
+	b2RopeJointDef RPJointDef;
+	RPJointDef.bodyA = dynamicBody[0];
+	RPJointDef.bodyB = bridgeBody;
+	RPJointDef.localAnchorA = b2Vec2(0, -30.0f / PTM_RATIO);
+	RPJointDef.localAnchorB = b2Vec2(0, 0);
+	RPJointDef.maxLength = (loc[0].y - bridgeLoc.y - 30) / PTM_RATIO;
+	RPJointDef.collideConnected = true;
+	b2RopeJoint* J = dynamic_cast<b2RopeJoint*>(_b2World->CreateJoint(&RPJointDef));
+
+	Sprite* ropeSprite[8] = { nullptr };
+	Point ropeLoc[8];
+	Size ropeSize[8];
+	b2Body* ropeBody[8] = { nullptr };
+
+	fixtureDef.density = 0.01f; fixtureDef.friction = 1.0f; fixtureDef.restitution = 0.0f;
+	fixtureDef.shape = &polyShape;
+	for (int i = 0; i < 8; i++)
+	{
+		std::ostringstream ostr;
+		std::string objname;
+		ostr << "rope01_"; ostr.width(2); ostr.fill('0'); ostr << i + 1; objname = ostr.str();
+
+		ropeSprite[i] = dynamic_cast<Sprite*>(_csbRoot->getChildByName(objname));
+		ropeLoc[i] = ropeSprite[i]->getPosition();
+		ropeSize[i] = ropeSprite[i]->getContentSize();
+
+		dynamicBodyDef.position.Set(ropeLoc[i].x / PTM_RATIO, ropeLoc[i].y / PTM_RATIO);
+		dynamicBodyDef.userData = ropeSprite[i];
+		dynamicBodyDef.fixedRotation = false;
+		ropeBody[i] = _b2World->CreateBody(&dynamicBodyDef);
+		polyShape.SetAsBox((ropeSize[i].width - 4) * 0.5f / PTM_RATIO, (ropeSize[i].height - 4) * 0.5 / PTM_RATIO);
+		ropeBody[i]->CreateFixture(&fixtureDef);
+	}
+
+	float locAnchor = 0.5f * (ropeSize[0].height - 5) / PTM_RATIO;
+	RJoint.bodyA = dynamicBody[0];
+	RJoint.localAnchorA.Set(0, -0.9f);
+	RJoint.bodyB = ropeBody[0];
+	RJoint.localAnchorB.Set(0, locAnchor);
+	_b2World->CreateJoint(&RJoint);
+	for (int i = 0; i < 7; i++)
+	{
+		RJoint.bodyA = ropeBody[i];
+		RJoint.localAnchorA.Set(0, -locAnchor);
+		RJoint.bodyB = ropeBody[i + 1];
+		RJoint.localAnchorB.Set(0, locAnchor);
+		_b2World->CreateJoint(&RJoint);
+	}
+	RJoint.bodyA = ropeBody[7];
+	RJoint.localAnchorA.Set(0, -locAnchor);
+	RJoint.bodyB = bridgeBody;
+	RJoint.localAnchorB.Set(0, 0.85f);
+	_b2World->CreateJoint(&RJoint);
+}
+
+void StageFour::createElevator()
+{
+	b2Body* elevatorBody[2];
+	b2Body* staticBody[2];
+	Point loc[2];
+	b2PolygonShape boxShape;
+	b2FixtureDef fixtureDef;
+	b2BodyDef dynamicBodyDef;
+	dynamicBodyDef.type = b2_dynamicBody;
+	for (int i = 0; i < 2; i++)
+	{
+		std::ostringstream ostr;
+		std::string objname;
+		ostr << "elevator0" << i + 1; objname = ostr.str();
+		auto elevatorSprite = dynamic_cast<Sprite*>(_csbRoot->getChildByName(objname));
+		loc[i] = elevatorSprite->getPosition();
+		_spawnPoint[6 + i] = elevatorSprite->getPosition();
+		Size size = elevatorSprite->getContentSize();
+		float scaleX = elevatorSprite->getScaleX();
+		float scaleY = elevatorSprite->getScaleY();
+
+		dynamicBodyDef.position.Set(loc[i].x / PTM_RATIO, loc[i].y / PTM_RATIO);
+		dynamicBodyDef.userData = elevatorSprite;
+		dynamicBodyDef.gravityScale = 0;
+		elevatorBody[i] = _b2World->CreateBody(&dynamicBodyDef);
+
+		boxShape.SetAsBox((size.width - 5) * scaleX * 0.5f / PTM_RATIO, (size.height - 5) * scaleY * 0.5f / PTM_RATIO);
+		fixtureDef.shape = &boxShape;
+		fixtureDef.density = 1.0f;
+		fixtureDef.friction = 0.5f;
+		fixtureDef.restitution = 0.1f;
+		elevatorBody[i]->CreateFixture(&fixtureDef);
+
+		_etcBody[i] = elevatorBody[i];
+	}
+	for (int i = 0; i < 2; i++)
+	{
+		b2BodyDef staticBodyDef;
+		staticBodyDef.type = b2_staticBody;
+		staticBodyDef.userData = NULL;
+		if(i == 0)
+			staticBodyDef.position.Set(elevatorBody[i]->GetPosition().x, 320 / PTM_RATIO);
+		else
+			staticBodyDef.position.Set(elevatorBody[i]->GetPosition().x, -5 / PTM_RATIO);
+		staticBody[i] = _b2World->CreateBody(&staticBodyDef);
+		b2CircleShape staticShape;
+		staticShape.m_radius = 5 / PTM_RATIO;
+		b2FixtureDef staticfixtureDef;
+		staticfixtureDef.shape = &staticShape;
+
+		staticBody[i]->CreateFixture(&staticfixtureDef);
+	}
+
+	b2PrismaticJointDef PJoint;
+	PJoint.Initialize(staticBody[0], elevatorBody[0], staticBody[0]->GetPosition(), b2Vec2(0, -1.0f));
+	_b2World->CreateJoint(&PJoint);
+
+	PJoint.Initialize(staticBody[1], elevatorBody[1], staticBody[1]->GetPosition(), b2Vec2(0, -1.0f));
+	_b2World->CreateJoint(&PJoint);
+
+	//trench
+	auto trenchSprite = dynamic_cast<Sprite*>(_csbRoot->getChildByName("trench"));
+	Point trenchLoc = trenchSprite->getPosition();
+	Size trenchSize = trenchSprite->getContentSize();
+	float scaleX = trenchSprite->getScaleX();
+	float scaleY = trenchSprite->getScaleY();
+
+	b2BodyDef trenchDef;
+	trenchDef.userData = trenchSprite;
+	trenchDef.position.Set(trenchLoc.x / PTM_RATIO, trenchLoc.y / PTM_RATIO);
+	trenchDef.type = b2_staticBody;
+	b2Body* trenchBody = _b2World->CreateBody(&trenchDef);
+	
+	b2FixtureDef trenchFixture;
+	boxShape.SetAsBox((trenchSize.width - 4) * scaleX * 0.5f / PTM_RATIO, (trenchSize.height - 4) * scaleY * 0.5f / PTM_RATIO);
+	trenchFixture.shape = &boxShape;
+	trenchFixture.filter.categoryBits = 1 << 1;
+	trenchFixture.friction = 0.2f;
+
+	trenchBody->CreateFixture(&trenchFixture);
+
+}
+
+void StageFour::createDynamicWalls()
+{
+	b2BodyDef wallDef;
+	wallDef.type = b2_dynamicBody;
+	b2PolygonShape wallShape;
+	b2FixtureDef fixtureDef;
+	fixtureDef.density = 2.0f;
+	fixtureDef.friction = 0.4f;
+	fixtureDef.restitution = 0.5f;
+	
+	for (int i = 1; i <= 5; i++)
+	{
+		std::ostringstream ostr;
+		std::string objname;
+		ostr << "wall_0" << i; objname = ostr.str();
+
+		auto wallSprite = dynamic_cast<Sprite*>(_csbRoot->getChildByName(objname));
+		Point loc = wallSprite->getPosition();
+		_spawnPoint[i] = wallSprite->getPosition();
+		Size size = wallSprite->getContentSize();
+
+		wallDef.position.Set(loc.x / PTM_RATIO, loc.y / PTM_RATIO);
+		wallDef.userData = wallSprite;
+		b2Body* wallBody = _b2World->CreateBody(&wallDef);
+
+		wallShape.SetAsBox((size.width - 4) * 0.5 / PTM_RATIO, (size.height - 4) * 0.5 / PTM_RATIO);
+		fixtureDef.shape = &wallShape;
+
+		wallBody->CreateFixture(&fixtureDef);
+		_wall[i - 1] = wallBody;
+	}
 }
 
 void StageFour::reset()
 {
 	_returnButton[1]->setVisible(false);
-	_resetBtn->setVisible(false);
+	_resetBtn[1]->setVisible(false);
+	_contactListener.setGoal(false);
+
+	wv = -30.0f;
+	_contactListener.setChangeDir(false);
+
+	Sprite* ballData = static_cast<Sprite*>(_player->GetUserData());
+	ballData->setPosition(_spawnPoint[0]);
+	_player->SetTransform(b2Vec2(_spawnPoint[0].x / PTM_RATIO, _spawnPoint[0].y / PTM_RATIO), 0);
+
+	for (int i = 0; i < 5; i++)
+	{
+		Sprite* wallData = static_cast<Sprite*>(_wall[i]->GetUserData());
+		wallData->setPosition(_spawnPoint[i + 1]);
+		_wall[i]->SetLinearVelocity(b2Vec2(0, 0));
+		_wall[i]->SetTransform(b2Vec2(_spawnPoint[i + 1].x / PTM_RATIO, _spawnPoint[i + 1].y / PTM_RATIO), 0);
+	}
+
+	for (int i = 0; i < 2; i++)
+	{
+		Sprite* etcData = static_cast<Sprite*>(_etcBody[i]->GetUserData());
+		etcData->setPosition(_spawnPoint[6 + i]);
+		_etcBody[i]->SetLinearVelocity(b2Vec2(0, 0));
+		_etcBody[i]->SetTransform(b2Vec2(_spawnPoint[6 + i].x / PTM_RATIO, _spawnPoint[6 + i].y / PTM_RATIO), 0);
+	}
+
+	for (int i = 0; i < 3; i++)
+	{
+		Sprite* gearData = static_cast<Sprite*>(_MouseJointBody[i]->GetUserData());
+		gearData->setPosition(_spawnPoint[8 + i]);
+		_MouseJointBody[i]->SetLinearVelocity(b2Vec2(0, 0));
+		_MouseJointBody[i]->SetTransform(b2Vec2(_spawnPoint[8 + i].x / PTM_RATIO, _spawnPoint[8 + i].y / PTM_RATIO), 0);
+	}
+
+		Sprite* wheelData = static_cast<Sprite*>(_rearWheel->GetUserData());
+		wheelData->setPosition(_spawnPoint[11]);
+		_rearWheel->SetLinearVelocity(b2Vec2(0, 0));
+		_rearWheel->SetTransform(b2Vec2(_spawnPoint[11].x / PTM_RATIO, _spawnPoint[11].y / PTM_RATIO), 0);
+
+		wheelData = static_cast<Sprite*>(_frontWheel->GetUserData());
+		wheelData->setPosition(_spawnPoint[12]);
+		_frontWheel->SetLinearVelocity(b2Vec2(0, 0));
+		_frontWheel->SetTransform(b2Vec2(_spawnPoint[12].x / PTM_RATIO, _spawnPoint[12].y / PTM_RATIO), 0);
 }

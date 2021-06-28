@@ -16,12 +16,15 @@ public:
 	ContactListener();
 	bool _goal;
 	bool _portal;
+	bool _changeDir;
 	//¸I¼²¶}©l
 	virtual void BeginContact(b2Contact* contact);
 	//¸I¼²µ²§ô
 	virtual void EndContact(b2Contact* contact);
 	bool isGoal();
 	bool isPortal();
+	bool isChangeDir();
+	void setChangeDir(bool change);
 	void setGoal(bool goal);
 
 	b2Body* getContactObj();

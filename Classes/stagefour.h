@@ -24,18 +24,26 @@ class StageFour : public cocos2d::Scene
 {
 private:
 	StaticShapeCreator* _shapeCreator;
-	Point _spawnPoint[6];
+	Point _spawnPoint[13];
 	b2Body* _player;
 	b2Body* _rearWheel;
+	b2Body* _frontWheel;
 
 	// for MouseJoint
 	b2Body* _bottomBody; // ©³³¡ªº edgeShape
 	b2MouseJoint* _MouseJoint;
+	b2Body* _MouseJointBody[3];
 	bool _bTouchOn;
 
-	CButton* _resetBtn;
+	CButton* _resetBtn[2];
 
 	Node* _endNode;
+
+	b2Body* _wall[5];
+
+	b2Body* _etcBody[2];
+
+	float wv;
 public:
 	~StageFour();
 	// there's no 'id' in cpp, so we recommend returning the class instance pointer
@@ -85,6 +93,8 @@ public:
 	void createSensor(int type, int amount);
 	void createCar();
 	void createBridgeAndRope();
+	void createElevator();
+	void createDynamicWalls();
 	void reset();
 
 
