@@ -739,6 +739,7 @@ void StageThree::createCar()
 
 		if (i == 1)_rearWheel = wheelBody;
 	}
+	//_rearWheel->SetAngularVelocity(-100.0f);
 
 	b2RevoluteJointDef wheelJoint;
 	wheelJoint.bodyA = carBody;
